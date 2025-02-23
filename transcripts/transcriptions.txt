@@ -1,0 +1,56 @@
+
+
+==================================================
+Timestamp: 2025-02-21 17:21:36
+ORIG : Grazie per la visione
+SUMM : Grazie per aver guardato.
+
+==================================================
+Timestamp: 2025-02-22 17:21:43
+ORIG : Grazie per la visione
+SUMM : Grazie assai.
+
+==================================================
+Timestamp: 2025-02-22 17:21:43
+ORIG : Grazie per la visione
+SUMM : Grazie per aver guardato.
+
+==================================================
+Timestamp: 2025-02-23 17:21:52
+ORIG : Grazie per la visione
+SUMM : Grazie per aver guardato.
+
+==================================================
+Timestamp: 2025-02-23 17:29:41
+ORIG : Brillante.
+SUMM : Il trascritto non è fornito, quindi non posso fornire un riassunto in italiano.
+
+==================================================
+Timestamp: 2025-02-23 17:37:54
+ORIG : Prova 1, 2, 3, 4, 5, 6
+SUMM : Prova 1, 2, 3, 4, 5, 6
+
+==================================================
+Timestamp: 2025-02-23 17:38:14
+ORIG : Prova 1, 2, 3, 4, 5, 6
+SUMM : Prova 1, 2, 3, 4, 5, 6
+
+==================================================
+Timestamp: 2025-02-23 17:38:20
+ORIG : Prova 1, 2, 3, 4, 5, 6
+SUMM : Prova 1, 2, 3, 4, 5, 6
+
+==================================================
+Timestamp: 2025-02-23 17:39:56
+ORIG : Prova 1, 2, 3, 4, 5, 6
+SUMM : Prova 1, 2, 3, 4, 5, 6
+
+==================================================
+Timestamp: 2025-02-23 17:46:58
+ORIG : in quei campi è più annunciata circa.
+SUMM : In quel trascritto, viene annunciato qualcosa riguardo a quei campi.
+
+==================================================
+Timestamp: 2025-02-23 18:15:25
+ORIG : vive prodotti ecosolidali
+SUMM : Il trascritto riguarda prodotti ecosolidali.

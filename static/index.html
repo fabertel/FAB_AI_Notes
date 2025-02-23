@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio Transcription App</title>
+    <link rel="stylesheet" href="/static/styles/styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="app-title">Fab AI Diary</h1>
+
+        
+        <div class="button-group">
+            <button class="record-btn" onclick="startRecording()">🎙️ Start Recording</button>
+            <button class="stop-btn" onclick="stopRecording()">⏹️ Stop Recording</button>
+        </div>
+        
+        <p id="timer">Recording Time: 0s</p>
+        
+        <h2>Processing Status</h2>
+        <p id="processingStatus" class="status">Waiting for input...</p>
+        
+        <h2>Transcription Output</h2>
+        <pre id="transcriptionText" class="output-box"></pre>
+        
+        <h2>Summary Output</h2>
+        <pre id="summaryText" class="output-box"></pre>
+        
+        <h2>Token Usage & Cost</h2>
+        <pre id="costEstimate" class="output-box"></pre>
+        
+        <button id="saveButton" class="save-btn" style="display:none;" onclick="saveToFile()">💾 Save to Text File</button>
+        
+        <h2>Saved Transcriptions</h2>
+        <button class="show-files-btn" onclick="listTranscriptionDates()">📂 Show Available Dates</button>
+        <ul id="transcriptDates"></ul>
+        
+        <h2>Selected Date Transcriptions</h2>
+        <pre id="selectedDateTranscriptions" class="output-box"></pre>
+    </div>
+    
+    <script>
+        let mediaRecorder;
+        let audioChunks = [];
+        let timer;
+        let seconds = 0;
+
+        function startRecording() {
+            navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+                mediaRecorder = new MediaRecorder(stream);
+                mediaRecorder.ondataavailable = event => {
+                    audioChunks.push(event.data);
+                };
+                mediaRecorder.start();
+                document.getElementById("timer").innerText = "Recording Time: 0s";
+                document.getElementById("processingStatus").innerText = "Recording in progress...";
+                seconds = 0;
+                timer = setInterval(() => {
+                    seconds++;
+                    document.getElementById("timer").innerText = "Recording Time: " + seconds + "s";
+                }, 1000);
+            });
+        }
+
+        function stopRecording() {
+            mediaRecorder.stop();
+            clearInterval(timer);
+            document.getElementById("processingStatus").innerText = "Processing audio...";
+            mediaRecorder.onstop = async () => {
+                const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                processFile(audioBlob);
+                audioChunks = [];
+            };
+        }
+
+        function processFile(audioBlob) {
+            const formData = new FormData();
+            formData.append("file", audioBlob, "recording.wav");
+            
+            fetch("/record/", {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("processingStatus").innerText = "Processing complete!";
+                document.getElementById("transcriptionText").innerText = data.transcript;
+                document.getElementById("summaryText").innerText = data.summary;
+                document.getElementById("costEstimate").innerText = `Tokens Used: Translation - ${data.tokens_used.translation}, Summary - ${data.tokens_used.summary}\nEstimated Cost: \nWhisper - $${data.cost_estimate.whisper.toFixed(4)}\nTranslation - $${data.cost_estimate.translation.toFixed(4)}\nSummary - $${data.cost_estimate.summary.toFixed(4)}\nTotal - $${data.cost_estimate.total.toFixed(4)}`;
+                document.getElementById("saveButton").style.display = "block";
+            })
+            .catch(error => alert("Error processing file: " + error));
+        }
+        
+
+        function saveToFile() {
+            const transcript = document.getElementById("transcriptionText").innerText;
+            const summary = document.getElementById("summaryText").innerText;
+
+            console.log("Sending transcript:", transcript);
+            console.log("Sending summary:", summary);
+
+            fetch("/append/", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ transcript: transcript, summary: summary })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log("Server Response:", data);
+                alert("Transcription saved successfully!");
+            })
+            .catch(error => alert("Error saving transcription: " + error));
+        }
+
+
+
+        function listTranscriptionDates() {
+    fetch("/transcripts/dates")
+    .then(response => response.json())
+    .then(data => {
+        let list = document.getElementById("transcriptDates");
+        list.innerHTML = ""; // Clear previous list
+
+        if (!data.dates || data.dates.length === 0) {
+            list.innerHTML = "<li>No transcriptions found.</li>";
+            return;
+        }
+
+        data.dates.forEach(date => {
+            let listItem = document.createElement("li");
+
+            // Create a button instead of an <a> link
+            let button = document.createElement("button");
+            button.innerText = date;
+            button.classList.add("date-button");  // Apply styles if needed
+            button.dataset.date = date; // Store the date as a data attribute
+
+            // Add click event to the button
+            button.addEventListener("click", function() {
+                console.log("Clicked Date:", this.dataset.date);
+                showTranscriptionsForDate(this.dataset.date);
+            });
+
+            listItem.appendChild(button);
+            list.appendChild(listItem);
+        });
+
+        console.log("Dates loaded:", data.dates); // Debugging: Confirm dates are received
+    })
+    .catch(error => alert("Error fetching transcription dates: " + error));
+}
+
+
+function showTranscriptionsForDate(date) {
+        fetch(`/transcripts/${date}`)
+        .then(response => response.json())
+        .then(data => {
+            console.log("API Response:", data); // Debugging: Confirm JSON response
+
+            // Check if JSON response exists
+            if (!data || !data.summaries || data.summaries.length === 0) {
+                alert("No transcriptions available for this date.");
+                return;
+            }
+
+            // Concatenate summaries into a single string
+            let combinedSummaries = data.summaries.join(" ");
+
+            // Show concatenated summaries in an alert
+            alert(`Transcriptions for ${date}:\n\n${combinedSummaries}`);
+        })
+        .catch(error => {
+            console.error("Error fetching transcriptions:", error);
+            alert("Error fetching transcriptions: " + error);
+        });
+    }
+
+
+
+
+    </script>
+</body>
+</html>
